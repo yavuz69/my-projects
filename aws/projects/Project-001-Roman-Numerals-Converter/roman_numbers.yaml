@@ -11,7 +11,14 @@ Parameters:
   KeyName:
     Description: Enter the name of your Key Pair for SSH connections
     Type: AWS::EC2::KeyPair::KeyName
-   
+  HostzoneId:
+    Description: select your hostedzoneıd 
+    Type: AWS::Route53::HostedZone::Id
+  DomainName:
+    Description: select your domainname as "roman.bayyavuz.com"
+    Type: String
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<!-)  
+
 Resources:
   WebServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -51,11 +58,20 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub Web Server of ${AWS::StackName} Stack
-
+  
+  Route53:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostzoneId 
+      Name: !Ref DomainName # Required
+      ResourceRecords:
+        - !GetAtt WebServerHost.PublicIp 
+      TTL: 900
+      Type: A # Required
 
 Outputs:
   WebsiteURL:
     Value: !Sub
       - http://${PublicAddress}
-      - PublicAddress: !GetAtt WebServerHost.PublicDnsName
+      - PublicAddress: !Ref DomainName
     Description: Roman Numerals Converter Application URL
